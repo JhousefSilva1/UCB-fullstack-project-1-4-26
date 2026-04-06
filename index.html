@@ -1,128 +1,254 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Manager</title>
-    <style>
-        body{
-            font-family: Arial, sans-serif;
-            padding: 30px;
-            background-color: #f4f4f4;
-        }
-        h1{
-            color:#333;
-            margin-bottom: 20px;
-        }
-        input{
-            padding: 10px;
-            width: 250px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
-        button{
-            padding: 10px 15px;
-            margin-left: 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        button:hover{
-            background-color: #0056b3;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Manager</title>
+  <style>
+    /* Reset box model for consistency */
+    * {
+      box-sizing: border-box;
+    }
+    /* Page background and base typography */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 40px 20px;
+    }
+    /* Main container centered on screen */
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    /* Title styling */
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    /* Input + button layout */
+    .task-form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    /* Input field styling */
+    #taskInput {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
 
-        ul{
-            list-style: none;
-            padding: 0;
-            margin-top: 20px;
-        }
-        li{
-            background-color: white;
-            padding: 12px;
-            margin-bottom: 10px;
-            border-radius: 6px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            
-        }
-
-    </style>
+    /* Base button style */
+    button {
+      padding: 10px 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: white;
+      transition: 0.2s;
+    }
+    /* Add button */
+    #addTaskBtn {
+      background-color: #007bff;
+    }
+    #addTaskBtn:hover {
+      background-color: #0056b3;
+    }
+    /* Task list reset */
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    /* Each task item */
+    li {
+      background: #fafafa;
+      border: 1px solid #e5e5e5;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    /* Task text and editable input share same space */
+    .task-text,
+    .edit-input {
+      flex: 1;
+      font-size: 15px;
+    }
+    /* Input when editing */
+    .edit-input {
+      padding: 8px;
+      border: 1px solid #bbb;
+      border-radius: 6px;
+    }
+    /* Buttons container */
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+    /* Edit button (default state) */
+    .edit-btn {
+      background-color: #f0ad4e;
+    }
+    .edit-btn:hover {
+      background-color: #d9922e;
+    }
+    /* Save button (editing state) */
+    .save-btn {
+      background-color: #28a745;
+    }
+    .save-btn:hover {
+      background-color: #218838;
+    }
+    /* Delete button */
+    .delete-btn {
+      background-color: #dc3545;
+    }
+    .delete-btn:hover {
+      background-color: #b52a37;
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
     <h1>Task Manager</h1>
-    <input type="text" id="taskInput" placeholder="Escribe una nueva tarea">
-    <button id="addTaskBtn">Agregar tarea</button>
-    <ul id="taskList">
-        <li>Estudiar JavaScript</li>
-    </ul>
+
+    <div class="task-form">
+      <input type="text" id="taskInput" placeholder="Escribe una nueva tarea">
+      <button id="addTaskBtn">Agregar</button>
+    </div>
+
+    <ul id="taskList"></ul>
+  </div>
 </body>
-<script>
+ <script>
+    // DOM references
     const input = document.querySelector('#taskInput');
     const addBtn = document.querySelector('#addTaskBtn');
     const taskList = document.querySelector('#taskList');
 
-    addBtn.addEventListener('click', () => {
-        const taskText = input.value.trim();
-        if(taskText !== ''){
-            const li = document.createElement('li');
-            li.textContent = taskText;
-            taskList.appendChild(li);
-            input.value = '';
+    /**
+     * Creates a new task element and appends it to the list
+     */
+    function createTask(taskText) {
+      const li = document.createElement('li');
+      // Task text element
+      const span = document.createElement('span');
+      span.classList.add('task-text');
+      span.textContent = taskText;
+
+      // Actions container (edit/delete buttons)
+      const actions = document.createElement('div');
+      actions.classList.add('actions');
+
+      const editBtn = document.createElement('button');
+      editBtn.textContent = 'Editar';
+      editBtn.classList.add('edit-btn');
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = 'Eliminar';
+      deleteBtn.classList.add('delete-btn');
+
+
+      editBtn.addEventListener('click', () => {
+        const isEditing = editBtn.textContent === 'Guardar';
+        // Enter edit mode
+        if (!isEditing) {
+          const editInput = document.createElement('input');
+          editInput.type = 'text';
+          editInput.value = span.textContent;
+          editInput.classList.add('edit-input');
+          // Replace text with input field
+          li.replaceChild(editInput, span);
+          // Change button state to "Save"
+          editBtn.textContent = 'Guardar';
+          editBtn.classList.add('save-btn');
+          editBtn.classList.remove('edit-btn');
+          editInput.focus();
+          // Handle keyboard interactions inside edit mode
+          editInput.addEventListener('keydown', (e) => {
+            // Save with Enter
+            if (e.key === 'Enter') {
+              editBtn.click();
+            }
+            // Cancel editing with ESC
+            if (e.key === 'Escape') {
+              li.replaceChild(span, editInput);
+              editBtn.textContent = 'Editar';
+              editBtn.classList.remove('save-btn');
+              editBtn.classList.add('edit-btn');
+            }
+          });
+
+        } else {
+          // Save edited value
+          const editInput = li.querySelector('.edit-input');
+          const newText = editInput.value.trim();
+
+          if (newText !== '') {
+            span.textContent = newText;
+
+            // Replace input with updated text
+            li.replaceChild(span, editInput);
+
+            // Restore button state
+            editBtn.textContent = 'Editar';
+            editBtn.classList.remove('save-btn');
+            editBtn.classList.add('edit-btn');
+          }
         }
-        input.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-        addBtn.click();
+      });
+
+      /**
+       * Remove task from the list
+       */
+      deleteBtn.addEventListener('click', () => {
+        li.remove();
+      });
+
+      // Append buttons
+      actions.appendChild(editBtn);
+      actions.appendChild(deleteBtn);
+
+      // Append elements to list item
+      li.appendChild(span);
+      li.appendChild(actions);
+
+      taskList.appendChild(li);
     }
-});
+    
+     //Handles adding a new task
+     
+    function addTask() {
+      const taskText = input.value.trim();
+
+      if (taskText !== '') {
+        createTask(taskText);
+        input.value = '';
+        input.focus();
+      }
+    }
+    // Add task on button click
+    addBtn.addEventListener('click', addTask);
+
+    // Add task on Enter key
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        addTask();
+      }
     });
-</script>
+    // Initial example task
+    createTask('Estudiar JavaScript');
+  </script>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!--
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Manager</title>
-
-
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <h1>Task Manager</h1>
-    <input type="text" id="taskInput" placeholder="Write a new task">
-    <button id="addTaskBtn">Add Task</button>
-    <ul id="taskList">
-        <li>Study JavaScript</li>
-    </ul>
-
-    <script src="script.js"></script>
-</body>
-</html>
--->
